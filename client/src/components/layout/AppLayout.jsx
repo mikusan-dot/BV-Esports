@@ -11,9 +11,9 @@ export default function AppLayout() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-bg-dark">
+      <div className="flex items-center justify-center h-screen bg-[#0d1117]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-2 border-[#58a6ff] border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-text-muted">Loading...</p>
         </div>
       </div>

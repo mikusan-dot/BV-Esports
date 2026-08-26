@@ -12,6 +12,7 @@ import Transactions from "./pages/Transactions";
 import Announcements from "./pages/Announcements";
 import Activity from "./pages/Activity";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/announcements" element={<Announcements />} />
             <Route path="/activity" element={<Activity />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

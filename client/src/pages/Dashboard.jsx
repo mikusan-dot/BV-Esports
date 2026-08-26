@@ -7,8 +7,6 @@ import { formatCurrency, formatDate, formatDateTime } from "../utils/constants";
 import {
   Users,
   UserCheck,
-  Shield,
-  UserCog,
   DollarSign,
   TrendingUp,
   TrendingDown,
@@ -18,6 +16,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Swords,
+  ArrowRight,
 } from "lucide-react";
 import {
   BarChart,
@@ -32,28 +31,43 @@ import {
   Cell,
 } from "recharts";
 
-const CHART_COLORS = ["#6366f1", "#f59e0b", "#22c55e", "#ef4444", "#8b5cf6", "#06b6d4"];
+const CHART_COLORS = ["#58a6ff", "#3fb950", "#f85149", "#d29922", "#a371f7", "#39d2c0"];
 
 function StatCard({ icon: Icon, label, value, color = "primary", link }) {
-  const colorClasses = {
-    primary: "bg-primary/10 text-primary border-primary/20",
-    accent: "bg-accent/10 text-accent border-accent/20",
-    success: "bg-green-500/10 text-green-400 border-green-500/20",
-    danger: "bg-red-500/10 text-red-400 border-red-500/20",
+  const colorMap = {
+    primary: {
+      iconBg: "bg-[rgba(88,166,255,0.1)]",
+      iconText: "text-[#58a6ff]",
+      border: "border-[rgba(88,166,255,0.15)]",
+    },
+    success: {
+      iconBg: "bg-[rgba(63,185,80,0.1)]",
+      iconText: "text-[#3fb950]",
+      border: "border-[rgba(63,185,80,0.15)]",
+    },
+    danger: {
+      iconBg: "bg-[rgba(248,81,73,0.1)]",
+      iconText: "text-[#f85149]",
+      border: "border-[rgba(248,81,73,0.15)]",
+    },
   };
 
+  const c = colorMap[color] || colorMap.primary;
+
   const content = (
-    <div className={`card-gradient border border-border rounded-xl p-4 hover:border-border-light transition-all duration-200 ${link ? "cursor-pointer" : ""}`}>
-      <div className="flex items-start justify-between">
-        <div className={`w-10 h-10 rounded-lg ${colorClasses[color]} flex items-center justify-center border`}>
-          <Icon className="w-5 h-5" />
+    <div className="card-premium rounded-xl p-5 group cursor-pointer relative overflow-hidden">
+      <div className={`w-11 h-11 rounded-lg ${c.iconBg} flex items-center justify-center border ${c.border} mb-4`}>
+        <Icon className={`w-5 h-5 ${c.iconText}`} />
+      </div>
+      <div>
+        <p className="text-2xl font-extrabold text-text-primary tracking-tight">{value}</p>
+        <p className="text-xs text-text-muted mt-1 font-medium">{label}</p>
+      </div>
+      {link && (
+        <div className="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <ArrowRight className="w-4 h-4 text-text-muted" />
         </div>
-        {link && <ArrowUpRight className="w-4 h-4 text-text-muted" />}
-      </div>
-      <div className="mt-3">
-        <p className="text-2xl font-bold text-text-primary">{value}</p>
-        <p className="text-xs text-text-muted mt-0.5">{label}</p>
-      </div>
+      )}
     </div>
   );
 
@@ -98,7 +112,7 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#58a6ff] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -122,12 +136,18 @@ export default function Dashboard() {
     : [];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
-        <p className="text-sm text-text-muted mt-1">
-          Welcome back, {userData?.name || "Player"}
-        </p>
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-text-primary tracking-tight">Dashboard</h1>
+          <p className="text-sm text-text-muted mt-1 font-medium">
+            Welcome back, <span className="text-[#58a6ff]">{userData?.name || "Player"}</span>
+          </p>
+        </div>
+        <div className="hidden sm:flex items-center gap-1.5 text-[10px] text-text-muted font-semibold uppercase tracking-widest">
+          BV Esports
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -137,46 +157,46 @@ export default function Dashboard() {
         {hasPermission(role, "canViewFinance") && (
           <>
             <StatCard icon={TrendingUp} label="Total Income" value={formatCurrency(stats?.totalIncome)} color="success" link="/finance" />
-            <StatCard icon={Wallet} label="Current Balance" value={formatCurrency(stats?.balance)} color="accent" link="/finance" />
+            <StatCard icon={Wallet} label="Current Balance" value={formatCurrency(stats?.balance)} color="primary" link="/finance" />
           </>
         )}
         {!hasPermission(role, "canViewFinance") && (
           <>
             <StatCard icon={Swords} label="Substitutes" value={stats?.substitutes || 0} color="primary" />
-            <StatCard icon={Megaphone} label="Announcements" value={announcements.length} color="accent" link="/announcements" />
+            <StatCard icon={Megaphone} label="Announcements" value={announcements.length} color="primary" link="/announcements" />
           </>
         )}
       </div>
 
-      {/* Finance Charts - only for finance-access roles */}
+      {/* Finance Charts */}
       {hasPermission(role, "canViewFinance") && monthlyChartData.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 card-gradient border border-border rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-text-primary mb-4">Monthly Overview</h3>
+          <div className="lg:col-span-2 card-premium rounded-xl p-5">
+            <h3 className="text-sm font-bold text-text-primary mb-4">Monthly Overview</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={monthlyChartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e1e2e" />
-                <XAxis dataKey="name" tick={{ fill: "#71717a", fontSize: 12 }} />
-                <YAxis tick={{ fill: "#71717a", fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+                <XAxis dataKey="name" tick={{ fill: "#484f58", fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "#484f58", fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#111118", border: "1px solid #1e1e2e", borderRadius: "8px", color: "#e4e4e7" }}
+                  contentStyle={{ backgroundColor: "#161b22", border: "1px solid #30363d", borderRadius: "8px", color: "#e6edf3" }}
                 />
-                <Bar dataKey="Income" fill="#22c55e" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Income" fill="#3fb950" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Expenses" fill="#f85149" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="card-gradient border border-border rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-text-primary mb-4">Balance Overview</h3>
+          <div className="card-premium rounded-xl p-5">
+            <h3 className="text-sm font-bold text-text-primary mb-4">Balance Overview</h3>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
+                  innerRadius={55}
+                  outerRadius={85}
                   paddingAngle={5}
                   dataKey="value"
                 >
@@ -185,19 +205,19 @@ export default function Dashboard() {
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ backgroundColor: "#111118", border: "1px solid #1e1e2e", borderRadius: "8px", color: "#e4e4e7" }}
+                  contentStyle={{ backgroundColor: "#161b22", border: "1px solid #30363d", borderRadius: "8px", color: "#e6edf3" }}
                   formatter={(value) => formatCurrency(value)}
                 />
               </PieChart>
             </ResponsiveContainer>
             <div className="flex justify-center gap-4 mt-2">
               <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                <span className="text-xs text-text-muted">Income</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#3fb950]" />
+                <span className="text-xs text-text-muted font-medium">Income</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                <span className="text-xs text-text-muted">Expenses</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#f85149]" />
+                <span className="text-xs text-text-muted font-medium">Expenses</span>
               </div>
             </div>
           </div>
@@ -208,35 +228,35 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Recent Transactions */}
         {hasPermission(role, "canViewFinance") && (
-          <div className="card-gradient border border-border rounded-xl p-4">
+          <div className="card-premium rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-text-primary">Recent Transactions</h3>
-              <Link to="/transactions" className="text-xs text-primary hover:text-primary-light transition-colors">
-                View All
+              <h3 className="text-sm font-bold text-text-primary">Recent Transactions</h3>
+              <Link to="/transactions" className="text-xs text-[#58a6ff] hover:text-[#79c0ff] transition-colors font-semibold flex items-center gap-1">
+                View All <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             {transactions.length === 0 ? (
               <p className="text-sm text-text-muted text-center py-8">No transactions yet</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {transactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-bg-card-hover transition-colors">
+                  <div key={tx.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-[#21262d] transition-all duration-150">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        tx.type === "income" ? "bg-green-500/10" : "bg-red-500/10"
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        tx.type === "income" ? "bg-[rgba(63,185,80,0.1)] border border-[rgba(63,185,80,0.15)]" : "bg-[rgba(248,81,73,0.1)] border border-[rgba(248,81,73,0.15)]"
                       }`}>
                         {tx.type === "income" ? (
-                          <ArrowUpRight className="w-4 h-4 text-green-400" />
+                          <ArrowUpRight className="w-4 h-4 text-[#3fb950]" />
                         ) : (
-                          <ArrowDownRight className="w-4 h-4 text-red-400" />
+                          <ArrowDownRight className="w-4 h-4 text-[#f85149]" />
                         )}
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-text-primary">{tx.category}</p>
+                        <p className="text-sm font-semibold text-text-primary">{tx.category}</p>
                         <p className="text-xs text-text-muted">{formatDate(tx.date)}</p>
                       </div>
                     </div>
-                    <span className={`text-sm font-semibold ${tx.type === "income" ? "text-green-400" : "text-red-400"}`}>
+                    <span className={`text-sm font-bold ${tx.type === "income" ? "text-[#3fb950]" : "text-[#f85149]"}`}>
                       {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
                     </span>
                   </div>
@@ -247,11 +267,11 @@ export default function Dashboard() {
         )}
 
         {/* Announcements */}
-        <div className="card-gradient border border-border rounded-xl p-4">
+        <div className="card-premium rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-text-primary">Announcements</h3>
-            <Link to="/announcements" className="text-xs text-primary hover:text-primary-light transition-colors">
-              View All
+            <h3 className="text-sm font-bold text-text-primary">Announcements</h3>
+            <Link to="/announcements" className="text-xs text-[#58a6ff] hover:text-[#79c0ff] transition-colors font-semibold flex items-center gap-1">
+              View All <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           {announcements.length === 0 ? (
@@ -259,48 +279,48 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-2">
               {announcements.map((ann) => (
-                <div key={ann.id} className="p-3 rounded-lg border border-border hover:border-border-light transition-colors">
+                <div key={ann.id} className="p-3.5 rounded-lg border border-[#30363d] hover:border-[#484f58] transition-all duration-150">
                   <div className="flex items-start justify-between gap-2">
-                    <h4 className="text-sm font-medium text-text-primary">{ann.title}</h4>
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${
+                    <h4 className="text-sm font-semibold text-text-primary">{ann.title}</h4>
+                    <span className={`badge-premium shrink-0 ${
                       ann.priority === "Urgent"
-                        ? "text-red-400 bg-red-400/10 border-red-400/20"
+                        ? "text-[#f85149] bg-[rgba(248,81,73,0.1)] border border-[rgba(248,81,73,0.2)]"
                         : ann.priority === "Important"
-                        ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20"
-                        : "text-text-muted bg-bg-dark border-border"
+                        ? "text-[#d29922] bg-[rgba(210,153,34,0.1)] border border-[rgba(210,153,34,0.2)]"
+                        : "text-text-muted bg-[#21262d] border border-[#30363d]"
                     }`}>
                       {ann.priority}
                     </span>
                   </div>
-                  <p className="text-xs text-text-secondary mt-1 line-clamp-2">{ann.message}</p>
-                  <p className="text-[10px] text-text-muted mt-2">{formatDate(ann.createdAt)} - {ann.createdBy}</p>
+                  <p className="text-xs text-text-secondary mt-1.5 line-clamp-2">{ann.message}</p>
+                  <p className="text-[10px] text-text-muted mt-2 font-medium">{formatDate(ann.createdAt)} - {ann.createdBy}</p>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Activity Log - only for admin+ */}
+        {/* Activity Log */}
         {hasPermission(role, "canViewActivity") && (
-          <div className="card-gradient border border-border rounded-xl p-4">
+          <div className="card-premium rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-text-primary">Recent Activity</h3>
-              <Link to="/activity" className="text-xs text-primary hover:text-primary-light transition-colors">
-                View All
+              <h3 className="text-sm font-bold text-text-primary">Recent Activity</h3>
+              <Link to="/activity" className="text-xs text-[#58a6ff] hover:text-[#79c0ff] transition-colors font-semibold flex items-center gap-1">
+                View All <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
             {activityLogs.length === 0 ? (
               <p className="text-sm text-text-muted text-center py-8">No activity yet</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {activityLogs.slice(0, 5).map((log) => (
-                  <div key={log.id} className="flex items-start gap-3 p-2">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Activity className="w-4 h-4 text-primary" />
+                  <div key={log.id} className="flex items-start gap-3 p-2.5 rounded-lg">
+                    <div className="w-8 h-8 rounded-lg bg-[rgba(88,166,255,0.1)] flex items-center justify-center flex-shrink-0 mt-0.5 border border-[rgba(88,166,255,0.15)]">
+                      <Activity className="w-3.5 h-3.5 text-[#58a6ff]" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm text-text-primary line-clamp-1">{log.description}</p>
-                      <p className="text-[10px] text-text-muted">{formatDateTime(log.createdAt)}</p>
+                      <p className="text-[10px] text-text-muted font-medium">{formatDateTime(log.createdAt)}</p>
                     </div>
                   </div>
                 ))}
@@ -311,25 +331,20 @@ export default function Dashboard() {
 
         {/* Team Info for Players */}
         {!hasPermission(role, "canViewFinance") && !hasPermission(role, "canViewActivity") && (
-          <div className="card-gradient border border-border rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-text-primary mb-4">Team Stats</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 rounded-lg bg-bg-dark border border-border">
-                <p className="text-2xl font-bold text-primary">{stats?.totalPlayers || 0}</p>
-                <p className="text-xs text-text-muted mt-1">Team Members</p>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-bg-dark border border-border">
-                <p className="text-2xl font-bold text-green-400">{stats?.activePlayers || 0}</p>
-                <p className="text-xs text-text-muted mt-1">Active Players</p>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-bg-dark border border-border">
-                <p className="text-2xl font-bold text-yellow-400">{stats?.managers || 0}</p>
-                <p className="text-xs text-text-muted mt-1">Managers</p>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-bg-dark border border-border">
-                <p className="text-2xl font-bold text-purple-400">{stats?.admins || 0}</p>
-                <p className="text-xs text-text-muted mt-1">Admins</p>
-              </div>
+          <div className="card-premium rounded-xl p-5">
+            <h3 className="text-sm font-bold text-text-primary mb-4">Team Stats</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: "Team Members", value: stats?.totalPlayers || 0, color: "text-[#58a6ff]" },
+                { label: "Active Players", value: stats?.activePlayers || 0, color: "text-[#3fb950]" },
+                { label: "Managers", value: stats?.managers || 0, color: "text-[#d29922]" },
+                { label: "Admins", value: stats?.admins || 0, color: "text-[#a371f7]" },
+              ].map((item) => (
+                <div key={item.label} className="text-center p-4 rounded-lg bg-[#21262d] border border-[#30363d]">
+                  <p className={`text-2xl font-extrabold ${item.color}`}>{item.value}</p>
+                  <p className="text-[10px] text-text-muted mt-1 font-semibold uppercase tracking-wider">{item.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         )}

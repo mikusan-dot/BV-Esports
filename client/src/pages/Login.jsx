@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Trophy, Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { Trophy, Mail, Lock, Eye, EyeOff, LogIn, X } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -49,58 +49,64 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-dark px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#0d1117] px-4">
       <div className="w-full max-w-md animate-fade-in">
+        {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center mb-4 glow-primary">
-            <Trophy className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 mx-auto rounded-xl bg-gradient-to-br from-[rgba(88,166,255,0.15)] to-[rgba(88,166,255,0.05)] border border-[rgba(88,166,255,0.15)] flex items-center justify-center mb-5 shadow-lg">
+            <Trophy className="w-8 h-8 text-[#58a6ff]" />
           </div>
-          <h1 className="text-2xl font-bold text-text-primary">BV Esports</h1>
-          <p className="text-sm text-text-muted mt-1">Team Management System</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">
+            <span className="text-[#58a6ff]">BV</span>
+            <span className="text-text-primary ml-2">Esports</span>
+          </h1>
+          <p className="text-sm text-text-muted mt-1.5 font-medium">Team Management System</p>
         </div>
 
-        <div className="bg-bg-card border border-border rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-text-primary mb-1">Welcome Back</h2>
+        {/* Card */}
+        <div className="card-premium rounded-xl p-7">
+          <h2 className="text-lg font-bold text-text-primary mb-1">Welcome Back</h2>
           <p className="text-sm text-text-muted mb-6">Sign in to your account</p>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div className="mb-4 p-3.5 rounded-lg bg-[rgba(248,81,73,0.08)] border border-[rgba(248,81,73,0.2)] text-[#f85149] text-sm font-medium flex items-center gap-2">
+              <X className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Email</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Email</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 bg-bg-dark border border-border rounded-lg text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
+                  className="w-full pl-10 pr-4 py-3 input-premium text-sm text-text-primary placeholder-text-muted"
                   placeholder="you@example.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1.5">Password</label>
+              <label className="block text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wider">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-10 pr-10 py-2.5 bg-bg-dark border border-border rounded-lg text-sm text-text-primary placeholder-text-muted outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-colors"
+                  className="w-full pl-10 pr-11 py-3 input-premium text-sm text-text-primary placeholder-text-muted"
                   placeholder="Enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -110,7 +116,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary hover:bg-primary-dark disabled:opacity-50 text-white font-medium rounded-lg text-sm transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 btn-primary rounded-lg text-sm disabled:opacity-50 mt-2"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -126,16 +132,16 @@ export default function Login() {
           <div className="mt-4 text-center">
             <button
               onClick={handleResetPassword}
-              className="text-sm text-primary hover:text-primary-light transition-colors"
+              className="text-sm text-[#58a6ff]/80 hover:text-[#58a6ff] transition-colors font-medium"
             >
               Forgot password?
             </button>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-border text-center">
+          <div className="mt-6 pt-5 border-t border-[#30363d] text-center">
             <p className="text-sm text-text-muted">
               Don't have an account?{" "}
-              <Link to="/register" className="text-primary hover:text-primary-light font-medium transition-colors">
+              <Link to="/register" className="text-[#58a6ff] hover:text-[#79c0ff] font-semibold transition-colors">
                 Register
               </Link>
             </p>

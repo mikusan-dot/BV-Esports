@@ -185,6 +185,75 @@ router.put("/users/:uid/role", requireAuth, requireOwner, async (req, res) => {
   }
 });
 
+// Update own profile
+router.put("/profile", requireAuth, async (req, res) => {
+  try {
+    const { name, inGameName, uid, dateOfBirth, address, device, socialLinks } = req.body;
+    const userId = req.user.uid;
+
+    const userUpdates = { updatedAt: new Date() };
+    if (name !== undefined) userUpdates.name = name;
+
+    await getDb().collection("users").doc(userId).update(userUpdates);
+
+    const userDoc = await getDb().collection("users").doc(userId).get();
+    if (userDoc.exists && userDoc.data().playerId) {
+      const playerUpdates = { updatedAt: new Date() };
+      if (name !== undefined) playerUpdates.fullName = name;
+      if (inGameName !== undefined) playerUpdates.inGameName = inGameName;
+      if (uid !== undefined) playerUpdates.uid = uid;
+      if (dateOfBirth !== undefined) playerUpdates.dateOfBirth = dateOfBirth;
+      if (address !== undefined) playerUpdates.address = address;
+      if (device !== undefined) playerUpdates.device = device;
+      if (socialLinks !== undefined) playerUpdates.socialLinks = socialLinks;
+
+      await getDb().collection("players").doc(userDoc.data().playerId).update(playerUpdates);
+    }
+
+    await logActivity(userId, "update_profile", "user", userId, `${req.userData.name} updated their profile`);
+
+    const updatedDoc = await getDb().collection("users").doc(userId).get();
+    res.json({ id: updatedDoc.id, ...updatedDoc.data() });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
+});
+
+// Upload profile photo (base64 data URL)
+router.post("/profile/photo", requireAuth, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { photoURL } = req.body;
+
+    if (!photoURL) {
+      return res.status(400).json({ error: "Photo data is required" });
+    }
+
+    if (photoURL.length > 2 * 1024 * 1024) {
+      return res.status(400).json({ error: "Image too large. Max 1MB after compression." });
+    }
+
+    await getDb().collection("users").doc(userId).update({
+      photoURL,
+      updatedAt: new Date(),
+    });
+
+    const userDoc = await getDb().collection("users").doc(userId).get();
+    if (userDoc.exists && userDoc.data().playerId) {
+      await getDb().collection("players").doc(userDoc.data().playerId).update({
+        photoURL,
+        updatedAt: new Date(),
+      });
+    }
+
+    res.json({ photoURL });
+  } catch (error) {
+    console.error("Upload photo error:", error);
+    res.status(500).json({ error: "Failed to upload photo" });
+  }
+});
+
 // Delete user
 router.delete("/users/:uid", requireAuth, requireOwner, async (req, res) => {
   try {
